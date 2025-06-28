@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📊 Task Dashboard</title>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #4338ca;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --dark: #1e293b;
+      --light: #f8fafc;
+      --gray: #94a3b8;
+      --gray-light: #e2e8f0;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f1f5f9;
+      color: var(--dark);
+      line-height: 1.5;
+      padding-bottom: 70px;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: var(--primary-dark);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .user-info {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .user-info strong {
+      color: white;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    
+    .export-btn {
+      background-color: white;
+      color: var(--primary-dark);
+      border: 1px solid white;
+    }
+    
+    .export-btn:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+      transform: translateY(-1px);
+    }
+    
+    .logout-btn {
+      background-color: transparent;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .logout-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: white;
+    }
+    
+    .main-container {
+      display: flex;
+      min-height: calc(100vh - 72px);
+    }
+    
+    .sidebar {
+      width: 280px;
+      background-color: white;
+      padding: 1.5rem 1rem;
+      box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+      animation: slideIn 0.4s ease-out;
+    }
+    
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      padding-left: 0.5rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .nav-links a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.375rem;
+      color: var(--dark);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-links a:hover {
+      background-color: var(--gray-light);
+    }
+    
+    .nav-links a.active {
+      background-color: var(--primary-light);
+      color: white;
+    }
+    
+    .nav-links a i {
+      font-size: 1.1rem;
+      width: 24px;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .main-content {
+      flex: 1;
+      padding: 1.5rem;
+      animation: fadeIn 0.6s ease-out;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      border-left: 3px solid var(--primary);
+      height: 100px;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    
+    .stat-card-name {
+      font-size: 0.8rem;
+      color: var(--gray);
+    }
+    
+    .stat-card-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    
+    .stat-card-icon {
+      font-size: 1.8rem;
+      opacity: 0.8;
+    }
+    
+    .total-icon { color: var(--primary); }
+    .completed-icon { color: var(--success); }
+    .incomplete-icon { color: var(--danger); }
+    .progressing-icon { color: var(--warning); }
+    
+    .charts-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      flex: 1;
+    }
+    
+    .chart-row {
+      display: flex;
+      gap: 1.5rem;
+      height: 300px;
+    }
+    
+    @media (max-width: 1024px) {
+      .chart-row {
+        flex-direction: column;
+        height: auto;
+      }
+    }
+    
+    .chart-wrapper {
+      flex: 1;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .chart-area {
+      flex: 1;
+      position: relative;
+    }
+    
+    .chart-loader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .loading-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      margin: 0 4px;
+      animation: pulse 1.4s infinite ease-in-out;
+    }
+    
+    .loading-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .loading-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    .no-data-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--gray);
+      font-style: italic;
+    }
+    
+    footer {
+      background-color: var(--dark);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      font-size: 0.8rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+    
+    .chart-tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      pointer-events: none;
+      font-size: 0.875rem;
+      z-index: 100;
+      transform: translate(-50%, -100%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--gray-light);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-light);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1><i class="bi bi-clipboard-data"></i> Task Dashboard</h1>
+    <div class="header-actions">
+      <div class="user-info">Welcome, <strong>{{ request.user.username }}</strong></div>
+      <a href="{% url 'export_excel' %}" class="btn export-btn">
+        <i class="bi bi-download"></i> <span>Export</span>
+      </a>
+      <a href="{% url 'logout' %}" class="btn logout-btn">
+        <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div class="sidebar">
+      <div>
+        <div class="logo"><i class="bi bi-list-task"></i> Task Menu</div>
+        <div class="nav-links">
+          <a href="{% url 'dashboard' %}" class="active">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="{% url 'task_list' %}">
+            <i class="bi bi-list-task"></i>
+            <span>All Tasks</span>
+          </a>
+          <a href="{% url 'settings' %}">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+          </a>
+          <a href="{% url 'add_task' %}">
+            <i class="bi bi-plus-circle"></i>
+            <span>Add Task</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="stats-cards">
+        <div class="stat-card">
+          <div class="stat-card-info">
+            <div class="stat-card-name">Total Tasks</div>
+          </div>
+          <div class="stat-card-value">{{ total|default:"0" }}</div>
+          <div class="stat-card-icon total-icon">
+            <i class="bi bi-journal-text"></i>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-info">
+            <div class="stat-card-name">Completed</div>
+          </div>
+          <div class="stat-card-value">{{ completed|default:"0" }}</div>
+          <div class="stat-card-icon completed-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-info">
+            <div class="stat-card-name">Incomplete</div>
+          </div>
+          <div class="stat-card-value">{{ incomplete|default:"0" }}</div>
+          <div class="stat-card-icon incomplete-icon">
+            <i class="bi bi-x-circle"></i>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-info">
+            <div class="stat-card-name">In Progress</div>
+          </div>
+          <div class="stat-card-value">{{ progressing|default:"0" }}</div>
+          <div class="stat-card-icon progressing-icon">
+            <i class="bi bi-hourglass-split"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-container">
+        <div class="chart-row">
+          <div class="chart-wrapper">
+            <div class="chart-title">
+              <i class="bi bi-bar-chart"></i> Tasks by Status
+            </div>
+            <div class="chart-area">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <div class="chart-title">
+              <i class="bi bi-graph-up"></i> Tasks by Due Date
+            </div>
+            <div class="chart-area">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; <script>document.write(new Date().getFullYear())</script> Task Manager. All rights reserved.
+  </footer>
+
+  <!-- Pass Django data to JavaScript -->
+  {{ chart_data|json_script:"chart-data" }}
+  {{ due_data|json_script:"due-data" }}
+
+  
+
+  <script>
+    // Custom tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.classList.add('chart-tooltip');
+    document.body.appendChild(tooltip);
+
+    // Helper function to handle chart creation with loading state
+    async function createChartWithLoader(canvasId, config) {
+      const canvas = document.getElementById(canvasId);
+      const container = canvas.parentElement;
+      
+      // Create loader
+      const loader = document.createElement('div');
+      loader.className = 'chart-loader';
+      loader.innerHTML = `
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      `;
+      container.appendChild(loader);
+      
+      // Hide canvas during load
+      canvas.style.display = 'none';
+      
+      // Simulate loading
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Remove loader and show canvas
+      loader.remove();
+      canvas.style.display = 'block';
+      
+      // Create chart with animation
+      const ctx = canvas.getContext('2d');
+      return new Chart(ctx, config);
+    }
+
+    // Custom hover effect for charts
+    function setupChartHover(chart) {
+      const canvas = chart.canvas;
+      
+      canvas.addEventListener('mousemove', (e) => {
+        const activePoint = chart.getElementsAtEventForMode(
+          e, 
+          'nearest', 
+          { intersect: true }, 
+          false
+        );
+        
+        if (activePoint.length > 0) {
+          const { datasetIndex, index } = activePoint[0];
+          const meta = chart.getDatasetMeta(datasetIndex);
+          const data = meta.data[index];
+          
+          // Position tooltip
+          const rect = canvas.getBoundingClientRect();
+          const x = data.x + rect.left;
+          const y = data.y + rect.top;
+          
+          // Get value
+          const value = chart.data.datasets[datasetIndex].data[index];
+          const label = chart.data.labels[index];
+          
+          // Update tooltip
+          tooltip.innerHTML = `
+            <strong>${label}</strong><br>
+            ${value} tasks
+          `;
+          tooltip.style.left = `${x}px`;
+          tooltip.style.top = `${y}px`;
+          tooltip.style.opacity = '1';
+        } else {
+          tooltip.style.opacity = '0';
+        }
+      });
+      
+      canvas.addEventListener('mouseleave', () => {
+        tooltip.style.opacity = '0';
+      });
+    }
+
+    // Initialize charts when data is ready
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Get data from Django template variables
+        const chartData = JSON.parse(document.getElementById('chart-data').textContent || '{"labels":[],"counts":[]}');
+        const dueData = JSON.parse(document.getElementById('due-data').textContent || '{"labels":[],"counts":[]}');
+
+        console.log('Chart Data:', chartData);
+        console.log('Due Data:', dueData);
+
+        // Bar Chart - Tasks by Status
+        if (chartData.labels.length > 0) {
+          const barChart = await createChartWithLoader('barChart', {
+            type: 'bar',
+            data: {
+              labels: chartData.labels,
+              datasets: [{
+                label: 'Tasks',
+                data: chartData.counts,
+                backgroundColor: [
+                  'rgba(239, 68, 68, 0.7)',
+                  'rgba(245, 158, 11, 0.7)',
+                  'rgba(16, 185, 129, 0.7)'
+                ],
+                borderColor: [
+                  'rgba(239, 68, 68, 1)',
+                  'rgba(245, 158, 11, 1)',
+                  'rgba(16, 185, 129, 1)'
+                ],
+                borderWidth: 1,
+                borderRadius: 4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: context => `${context.dataset.label}: ${context.raw}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: { display: false }
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: { precision: 0 }
+                }
+              }
+            }
+          });
+          setupChartHover(barChart);
+        } else {
+          document.querySelector('#barChart').closest('.chart-area').innerHTML = `
+            <div class="no-data-message">No status data available</div>
+          `;
+        }
+
+        // Line Chart - Tasks by Due Date
+        if (dueData.labels.length > 0) {
+          const lineChart = await createChartWithLoader('lineChart', {
+            type: 'line',
+            data: {
+              labels: dueData.labels,
+              datasets: [{
+                label: 'Tasks Due',
+                data: dueData.counts,
+                borderColor: 'rgba(79, 70, 229, 1)',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                fill: true,
+                tension: 0.3
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: context => `${context.dataset.label}: ${context.raw}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: { display: false }
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: { precision: 0 }
+                }
+              }
+            }
+          });
+          setupChartHover(lineChart);
+        } else {
+          document.querySelector('#lineChart').closest('.chart-area').innerHTML = `
+            <div class="no-data-message">No due date data available</div>
+          `;
+        }
+
+        // Animate stats cards on scroll
+        const animateOnScroll = () => {
+          const cards = document.querySelectorAll('.stat-card');
+          cards.forEach((card, index) => {
+            const cardTop = card.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (cardTop < windowHeight - 100) {
+              card.style.animation = `fadeIn 0.5s ease-out ${index * 0.1}s forwards`;
+              card.style.opacity = '0';
+            }
+          });
+        };
+        
+        animateOnScroll();
+        window.addEventListener('scroll', animateOnScroll);
+
+      } catch (error) {
+        console.error('Error initializing charts:', error);
+        // Show error message to user
+        alert('Error loading chart data. Please try again later.');
+      }
+    });
+  </script>
+</body>
+</html>

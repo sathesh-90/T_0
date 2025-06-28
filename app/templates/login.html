@@ -1,0 +1,299 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compact Login</title>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: url('{% static "/images/Screenshot from 2025-06-26 20-44-44.png" %}') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .blur-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(8px);
+            background-color: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 380px;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 0.5s ease-in-out;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: #4f46e5;
+        }
+
+        .logo h1 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #475569;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .input-field {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #1e293b;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
+            height: 46px;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Remember Me Checkbox Styles */
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .remember-me input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            margin-right: 10px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .remember-me input[type="checkbox"]:checked {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .remember-me input[type="checkbox"]:checked::after {
+            content: '\2713';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .remember-me label {
+            color: #475569;
+            font-size: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 1rem;
+            height: 46px;
+        }
+
+        .submit-btn:hover {
+            background-color: #4338ca;
+        }
+
+        .submit-btn i {
+            font-size: 1.1rem;
+        }
+
+        .footer-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .footer-links a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="blur-overlay"></div>
+    
+    <div class="login-container">
+        <div class="logo">
+            <i class="bi bi-shield-lock"></i>
+            <h1>Account Login to Task-Manager</h1>
+        </div>
+
+        <form method="POST" id="loginForm">
+            {% csrf_token %}
+            <!-- Username/Email Field -->
+            <div class="form-group">
+                <label for="username">Username or E-mail</label>
+                <div class="input-field">
+                    <i class="bi bi-person input-icon"></i>
+                    <input type="text" id="username" name="username" required placeholder="Your username or email">
+                </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-field">
+                    <i class="bi bi-lock input-icon"></i>
+                    <input type="password" id="password" name="password" required placeholder="Your password">
+                </div>
+            </div>
+
+            <!-- Remember Me Checkbox -->
+            <div class="remember-me">
+                <input type="checkbox" id="remember_me" name="remember_me">
+                <label for="remember_me">Remember me</label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span id="btnText">Sign In</span>
+            </button>
+        </form>
+
+        <div class="footer-links">
+            <a href="{% url 'register' %}">Create new account</a> 
+        </div>
+    </div>
+
+    <script>
+        // Show error message if it exists
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage && errorMessage.textContent.trim() !== '') {
+                errorMessage.style.display = 'block';
+            }
+            
+            // Form submission loading state
+            const loginForm = document.getElementById('loginForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            
+            if (loginForm) {
+                loginForm.addEventListener('submit', function() {
+                    submitBtn.disabled = true;
+                    btnText.textContent = 'Signing In...';
+                    submitBtn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Signing In...';
+                });
+            }
+
+            // Check if remember me was checked previously
+            const rememberCheckbox = document.getElementById('remember_me');
+            const storedRemember = localStorage.getItem('rememberMe');
+            if (storedRemember === 'true') {
+                rememberCheckbox.checked = true;
+                const storedUsername = localStorage.getItem('rememberedUsername');
+                if (storedUsername) {
+                    document.getElementById('username').value = storedUsername;
+                }
+            }
+
+            // Save remember me preference
+            rememberCheckbox.addEventListener('change', function() {
+                localStorage.setItem('rememberMe', this.checked);
+                if (this.checked) {
+                    const username = document.getElementById('username').value;
+                    if (username) {
+                        localStorage.setItem('rememberedUsername', username);
+                    }
+                } else {
+                    localStorage.removeItem('rememberedUsername');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
