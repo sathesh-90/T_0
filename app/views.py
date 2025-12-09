@@ -170,6 +170,11 @@ def export_excel(request):
         writer.writerow([task.title, task.description, task.due_date, task.status, task.priority])
 
     return response
+
+
+
+
+    
 from django.shortcuts import render
 from .models import Task
 
